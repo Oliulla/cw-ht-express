@@ -44,7 +44,7 @@ const createOrder = async (cowId: string, buyerId: string): Promise<IOrder> => {
     // console.log("ek?")
 
     const sellerUser = await User.findOne({ _id: cow.seller })
-    console.log(sellerUser)
+    // console.log(sellerUser)
     if (!sellerUser) {
       throw new Error("Seller user not found")
     }

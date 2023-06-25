@@ -10,12 +10,13 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: [UserRole.SELLER, UserRole.BUYER],
+      enum: [UserRole.SELLER, UserRole.BUYER, UserRole.ADMIN],
       required: true,
     },
     password: {
       type: String,
       required: true,
+      select: 0,
     },
     seller: {
       type: Schema.Types.ObjectId,
@@ -24,6 +25,10 @@ const userSchema = new Schema<IUser>(
     buyer: {
       type: Schema.Types.ObjectId,
       ref: "UserProfile",
+    },
+    admin: {
+      type: Schema.Types.ObjectId,
+      ref: "Admin",
     },
   },
   {
