@@ -3,12 +3,7 @@ import { adminController } from "./admin.controller"
 
 const router = express.Router()
 
-// router.get("/:id", AdminController.getSingleAdmin)
-// router.get("/:id", AdminController.deleteAdmin)
-// router.patch("/:id", AdminController.updateAdmin)
-
-// router.get("/", AdminController.getAllAdmins)
-
 router.post("/create-admin", adminController.createAdmin)
+router.post("/login", adminController.adminLogin)
 
 export const adminRoutes = router
