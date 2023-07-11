@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from "express"
 import { userServices } from "./user.service"
 import sendResponse from "../../../shared/sendResponse"
-import { IUserProfile } from "../userProfile/userProfile.interface"
+// import { IUserProfile } from "../userProfile/userProfile.interface"
 import catchAsync from "../../../shared/catchAsync"
 
 const createUser: RequestHandler = catchAsync(
@@ -31,16 +31,11 @@ const createUser: RequestHandler = catchAsync(
 
     const result = await userServices.createUser(newUserData)
 
-    sendResponse<IUserProfile>(res, {
+    sendResponse(res, {
       statusCode: 200,
       success: true,
       message: "user created successfully!",
       data: result,
-      meta: {
-        page: 0,
-        limit: 0,
-        total: 0,
-      },
     })
   }
 )

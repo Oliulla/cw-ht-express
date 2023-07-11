@@ -12,6 +12,8 @@ export type IUser = {
   phoneNumber: string
   role: UserRole
   password: string
+  // needsPasswordChange: boolean
+  // passwordChangedAt?: Date
   seller?: Types.ObjectId | IUserProfile
   buyer?: Types.ObjectId | IUserProfile
   admin?: Types.ObjectId | IAdmin

@@ -17,6 +17,13 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
+    // needsPasswordChange: {
+    //   type: Boolean,
+    //   default: true,
+    // },
+    // passwordChangedAt: {
+    //   type: Date,
+    // },
     seller: {
       type: Schema.Types.ObjectId,
       ref: "UserProfile",

@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt"
 import { Secret } from "jsonwebtoken"
 import config from "../../../config"
 import ApiError from "../../../errors/ApiError"
@@ -29,6 +30,12 @@ const createAdmin = async (
     )
   }
 
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(
+    password,
+    Number(config.bycrypt_salt_rounds)
+  )
+
   const newAdmin = new Admin({
     name: {
       firstName,
@@ -41,7 +48,7 @@ const createAdmin = async (
   const newUser = new User({
     phoneNumber,
     role: UserRole.ADMIN || role,
-    password,
+    password: hashedPassword, // Store the hashed password
     admin: savedAdmin._id,
   })
   const savedUser = await newUser.save()
@@ -64,11 +71,16 @@ const adminLogin = async (
   phoneNumber: string,
   password: string
 ): Promise<{ accessToken: string }> => {
-  // console.log(phoneNumber, password)
   const user = await User.findOne({ phoneNumber }).exec()
-  // console.log(user)
 
-  if (!user || user.password !== password) {
+  if (!user) {
+    throw new ApiError(401, "Invalid phone number or password")
+  }
+
+  // Compare the hashed password
+  const isPasswordValid = await bcrypt.compare(password, user.password)
+
+  if (!isPasswordValid) {
     throw new ApiError(401, "Invalid phone number or password")
   }
 
