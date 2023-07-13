@@ -9,7 +9,6 @@ export enum UserRole {
 }
 
 export type IUser = {
-  phoneNumber: string
   role: UserRole
   password: string
   // needsPasswordChange: boolean

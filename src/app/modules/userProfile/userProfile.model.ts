@@ -22,6 +22,11 @@ const userProfileSchema = new Schema<IUserProfile>({
       required: true,
     },
   },
+  phoneNumber: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   address: {
     type: String,
     required: true,

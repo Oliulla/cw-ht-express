@@ -3,6 +3,7 @@ export type IUserProfile = {
     firstName: string
     lastName: string
   }
+  phoneNumber: string
   address: string
   budget: number
   income: number

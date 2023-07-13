@@ -3,12 +3,14 @@ import { User } from "../user/user.model"
 import { IUserProfile } from "./userProfile.interface"
 import { UserProfile } from "./userProfile.model"
 
+// get all user
 async function getUserProfiles() {
   const users = await User.find().populate("buyer").populate("seller").exec()
 
   return users
 }
 
+// get single user
 async function getSingleUserProfile(userId: string) {
   const user = await User.findById(userId)
     .populate("buyer")
@@ -18,6 +20,7 @@ async function getSingleUserProfile(userId: string) {
   return user
 }
 
+// update single user
 async function updateUser(userId: string, updates: Partial<IUserProfile>) {
   const user = await User.findByIdAndUpdate(userId, updates, {
     new: true,

@@ -17,6 +17,7 @@ export type NewUserData = {
 }
 
 async function createUser(profileData: NewUserData) {
+  // console.log(profileData)
   const {
     firstName,
     lastName,
@@ -35,12 +36,13 @@ async function createUser(profileData: NewUserData) {
   )
 
   // Check if the phoneNumber already exists in the users collection
-  const existingUser = await User.findOne({ phoneNumber }).exec()
+  const existingUser = await UserProfile.findOne({ phoneNumber }).exec()
   if (existingUser) {
     throw new ApiError(
       400,
       "User with the provided phone number already exists"
     )
+    return
   }
 
   const userProfile = new UserProfile({
@@ -48,6 +50,7 @@ async function createUser(profileData: NewUserData) {
       firstName,
       lastName,
     },
+    phoneNumber,
     address,
     budget: role === "seller" ? 0 : budget,
     income,
@@ -55,7 +58,6 @@ async function createUser(profileData: NewUserData) {
   await userProfile.save()
 
   const user = new User({
-    phoneNumber,
     role,
     password: hashedPassword,
     seller: role === UserRole.SELLER ? userProfile._id : undefined,
@@ -68,7 +70,7 @@ async function createUser(profileData: NewUserData) {
     // password: user.password,
     role: user.role,
     name: userProfile.name,
-    phoneNumber: user.phoneNumber,
+    phoneNumber: userProfile.phoneNumber,
     address: userProfile.address,
     budget: userProfile.budget,
     income: userProfile.income,
