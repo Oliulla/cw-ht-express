@@ -10,13 +10,16 @@ async function getUserProfiles() {
 }
 
 async function getSingleUserProfile(userId: string) {
-  const user = await UserProfile.findById(userId)
+  const user = await User.findById(userId)
+    .populate("buyer")
+    .populate("seller")
+    .exec()
 
   return user
 }
 
 async function updateUser(userId: string, updates: Partial<IUserProfile>) {
-  const user = await UserProfile.findByIdAndUpdate(userId, updates, {
+  const user = await User.findByIdAndUpdate(userId, updates, {
     new: true,
   })
   return user
