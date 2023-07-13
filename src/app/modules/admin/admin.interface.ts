@@ -9,3 +9,5 @@ export type IAdmin = {
 }
 
 export type AdminModel = Model<IAdmin, Record<string, unknown>>
+
+export type IAdminLoginResponse = { accessToken: string; refreshToken: string }

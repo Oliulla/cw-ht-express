@@ -17,6 +17,8 @@ export type IUser = {
   seller?: Types.ObjectId | IUserProfile
   buyer?: Types.ObjectId | IUserProfile
   admin?: Types.ObjectId | IAdmin
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type UserModel = Model<IUser, Record<string, unknown>>

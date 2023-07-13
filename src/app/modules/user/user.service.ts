@@ -39,36 +39,44 @@ async function createUser(profileData: NewUserData) {
   if (existingUser) {
     throw new ApiError(
       400,
-      "User with the provided phone number is already exists"
+      "User with the provided phone number already exists"
     )
   }
 
-  if (!existingUser) {
-    const userProfile = new UserProfile({
-      name: {
-        firstName,
-        lastName,
-      },
-      address,
-      budget: role === "seller" ? 0 : budget,
-      income,
-    })
-    await userProfile.save()
+  const userProfile = new UserProfile({
+    name: {
+      firstName,
+      lastName,
+    },
+    address,
+    budget: role === "seller" ? 0 : budget,
+    income,
+  })
+  await userProfile.save()
 
-    const user = new User({
-      phoneNumber,
-      role,
-      password: hashedPassword,
-      // password,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      seller: role === UserRole.SELLER ? userProfile._id : undefined,
-      buyer: role === UserRole.BUYER ? userProfile._id : undefined,
-    })
-    await user.save()
+  const user = new User({
+    phoneNumber,
+    role,
+    password: hashedPassword,
+    seller: role === UserRole.SELLER ? userProfile._id : undefined,
+    buyer: role === UserRole.BUYER ? userProfile._id : undefined,
+  })
+  await user.save()
 
-    return userProfile
+  const result = {
+    _id: user._id,
+    // password: user.password,
+    role: user.role,
+    name: userProfile.name,
+    phoneNumber: user.phoneNumber,
+    address: userProfile.address,
+    budget: userProfile.budget,
+    income: userProfile.income,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   }
+
+  return result
 }
 
 export const userServices = {

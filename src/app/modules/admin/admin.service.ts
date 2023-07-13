@@ -6,6 +6,7 @@ import { jwtHelpers } from "../../../helpers/jwtHelper"
 import { IUser, UserRole } from "../user/user.interface"
 import { User } from "../user/user.model"
 import { Admin } from "./admin.model"
+import { IAdminLoginResponse } from "./admin.interface"
 
 export type adminDataType = {
   phoneNumber: string
@@ -70,7 +71,7 @@ const createAdmin = async (
 const adminLogin = async (
   phoneNumber: string,
   password: string
-): Promise<{ accessToken: string }> => {
+): Promise<IAdminLoginResponse> => {
   const user = await User.findOne({ phoneNumber }).exec()
 
   if (!user) {
@@ -86,12 +87,18 @@ const adminLogin = async (
 
   // Generate the access token
   const accessToken = jwtHelpers.createToken(
-    { userId: user._id, role: user.role },
+    { admin_id: user._id, role: user.role },
     config.jwt.secret as Secret,
-    "12h"
+    config.jwt.expires_in as string
   )
 
-  return { accessToken }
+  const refreshToken = jwtHelpers.createToken(
+    { admin_id: user._id, role: user.role },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string
+  )
+
+  return { accessToken, refreshToken }
 }
 
 export const adminService = {
