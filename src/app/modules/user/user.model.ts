@@ -37,7 +37,7 @@ userSchema.pre<IUser & Document>("save", async function (next) {
   }
 
   try {
-    const salt = await bcrypt.genSalt(Number(config.bycrypt_salt_rounds))
+    const salt = await bcrypt.genSalt(Number(config.bcrypt_salt_rounds))
     this.password = await bcrypt.hash(this.password, salt)
     return next()
   } catch (error) {

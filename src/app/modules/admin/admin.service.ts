@@ -1,85 +1,57 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import bcrypt from "bcrypt"
 import { Secret } from "jsonwebtoken"
 import config from "../../../config"
 import ApiError from "../../../errors/ApiError"
 import { jwtHelpers } from "../../../helpers/jwtHelper"
-import { IUser, UserRole } from "../user/user.interface"
-import { User } from "../user/user.model"
 import { Admin } from "./admin.model"
-import { IAdminLoginResponse } from "./admin.interface"
-
-export type adminDataType = {
-  phoneNumber: string
-  password: string
-  role: string
-  firstName: string
-  lastName: string
-  address: string
-}
+import {
+  IAdmin,
+  IAdminLoginResponse,
+  IRefreshTokenResponse,
+} from "./admin.interface"
+import UserModel from "../user/user.model"
+import { UserRole } from "../user/user.interface"
 
 const createAdmin = async (
-  adminUserData: adminDataType
-): Promise<Partial<IUser> | undefined> => {
-  const { phoneNumber, password, role, firstName, lastName, address } =
-    adminUserData
+  adminUserData: IAdmin
+): Promise<IAdmin | undefined> => {
+  const { phoneNumber, password, name, address } = adminUserData
 
-  const existingUser = await User.findOne({ phoneNumber }).exec()
+  const existingUser = await UserModel.findOne({ phoneNumber }).exec()
   if (existingUser) {
     throw new ApiError(
       400,
       "User with the provided phone number is already exists"
     )
   }
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(
-    password,
-    Number(config.bycrypt_salt_rounds)
-  )
-
   const newAdmin = new Admin({
-    name: {
-      firstName,
-      lastName,
-    },
+    phoneNumber,
+    password,
+    role: UserRole.ADMIN,
+    name,
     address,
   })
   const savedAdmin = await newAdmin.save()
-
-  const newUser = new User({
-    phoneNumber,
-    role: UserRole.ADMIN || role,
-    password: hashedPassword, // Store the hashed password
-    admin: savedAdmin._id,
-  })
-  const savedUser = await newUser.save()
-
-  const returnData = {
-    _id: savedUser._id,
-    role: savedUser.role,
-    name: {
-      firstName: savedAdmin.name.firstName,
-      lastName: savedAdmin.name.lastName,
-    },
-    phoneNumber: savedUser.phoneNumber,
-    address: savedAdmin.address,
-  }
-
-  return returnData
+  const { password: adminSavedPass, ...adminSavedProps } = savedAdmin.toJSON()
+  return adminSavedProps as IAdmin
 }
 
 const adminLogin = async (
   phoneNumber: string,
   password: string
 ): Promise<IAdminLoginResponse> => {
-  const user = await User.findOne({ phoneNumber }).exec()
+  // console.log(phoneNumber, password)
+  const admin = await Admin.findOne({ phoneNumber }).exec()
+  const adminJSON = admin?.toJSON()
+  // console.log(adminJSON)
 
-  if (!user) {
+  if (!adminJSON) {
     throw new ApiError(401, "Invalid phone number or password")
   }
 
   // Compare the hashed password
-  const isPasswordValid = await bcrypt.compare(password, user.password)
+  const isPasswordValid = await bcrypt.compare(password, adminJSON.password)
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid phone number or password")
@@ -87,13 +59,13 @@ const adminLogin = async (
 
   // Generate the access token
   const accessToken = jwtHelpers.createToken(
-    { admin_id: user._id, role: user.role },
+    { admin_id: adminJSON._id, role: adminJSON.role },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   )
 
   const refreshToken = jwtHelpers.createToken(
-    { admin_id: user._id, role: user.role },
+    { admin_id: adminJSON._id, role: adminJSON.role },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   )
@@ -101,7 +73,46 @@ const adminLogin = async (
   return { accessToken, refreshToken }
 }
 
+const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
+  //verify token
+  // invalid token - synchronous
+  let verifiedToken = null
+  try {
+    verifiedToken = jwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret
+    )
+  } catch (err) {
+    throw new ApiError(403, "Invalid Refresh Token")
+  }
+
+  const { admin_id } = verifiedToken
+
+  // tumi delete hye gso  kintu tumar refresh token ase
+  // checking deleted user's refresh token
+
+  const isUserExist = await Admin.isUserExist(admin_id)
+  if (!isUserExist) {
+    throw new ApiError(404, "User does not exist")
+  }
+  //generate new token
+
+  const newAccessToken = jwtHelpers.createToken(
+    {
+      admin_id: isUserExist._id,
+      role: isUserExist.role,
+    },
+    config.jwt.secret as Secret,
+    config.jwt.expires_in as string
+  )
+
+  return {
+    accessToken: newAccessToken,
+  }
+}
+
 export const adminService = {
   createAdmin,
   adminLogin,
+  refreshToken,
 }
