@@ -23,7 +23,7 @@ async function createUser(profileData: NewUserData) {
     lastName,
     address,
     budget,
-    income,
+    income = 0,
     phoneNumber,
     role,
     password,
@@ -53,7 +53,7 @@ async function createUser(profileData: NewUserData) {
     phoneNumber,
     address,
     budget: role === "seller" ? 0 : budget,
-    income,
+    income: role === "buyer" ? 0 : income,
   })
   await userProfile.save()
 

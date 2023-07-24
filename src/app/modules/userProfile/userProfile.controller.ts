@@ -1,112 +1,82 @@
-import { NextFunction, Request, Response } from "express"
+import { Request, Response } from "express"
 import { userProfileServices } from "./userProfile.service"
+import catchAsync from "../../../shared/catchAsync"
+import sendResponse from "../../../shared/sendResponse"
 
-const getUserProfiles = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const result = await userProfileServices.getUserProfiles()
+const getUserProfiles = catchAsync(async (req: Request, res: Response) => {
+  const result = await userProfileServices.getAllUsers()
 
-    res.status(200).json({
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Users retrieve successfully",
+    data: result,
+  })
+})
+
+const getSingleUserProfile = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.id
+  const result = await userProfileServices.getSingleUser(userId)
+
+  if (!result) {
+    return sendResponse(res, {
       success: true,
-      statusCode: 200,
-      message: "Users retrieve successfully",
+      statusCode: 404,
+      message: "User profile not found",
       data: result,
     })
-  } catch (error) {
-    next(error)
   }
-}
 
-const getSingleUserProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.params.id
-    const result = await userProfileServices.getSingleUserProfile(userId)
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "User profile retrieved successfully",
+    data: result,
+  })
+})
 
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        statusCode: 404,
-        message: "User profile not found",
-        data: null,
-      })
-    }
+const updateUserProfile = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.id
+  const updates = req.body
+  const result = await userProfileServices.updateUser(userId, updates)
 
-    res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "User profile retrieved successfully",
-      data: result,
+  if (!result) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: 404,
+      message: "User profile not found",
+      data: null,
     })
-  } catch (error) {
-    next(error)
   }
-}
 
-const updateUserProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.params.id
-    const updates = req.body
-    const result = await userProfileServices.updateUser(userId, updates)
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "User profile updated successfully",
+    data: result,
+  })
+})
 
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        statusCode: 404,
-        message: "User profile not found",
-        data: null,
-      })
-    }
+const deleteUserProfile = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.id
+  const result = await userProfileServices.deleteUser(userId)
 
-    res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "User profile updated successfully",
-      data: result,
+  if (!result) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: 404,
+      message: "User profile not found",
+      data: null,
     })
-  } catch (error) {
-    next(error)
   }
-}
 
-const deleteUserProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.params.id
-    const result = await userProfileServices.deleteUser(userId)
-
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        statusCode: 404,
-        message: "User profile not found",
-        data: null,
-      })
-    }
-
-    res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "User profile deleted successfully",
-      data: result,
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "User profile deleted successfully",
+    data: result,
+  })
+})
 
 export const userProfileController = {
   getUserProfiles,

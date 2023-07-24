@@ -4,14 +4,14 @@ import { IUserProfile } from "./userProfile.interface"
 import { UserProfile } from "./userProfile.model"
 
 // get all user
-async function getUserProfiles() {
+async function getAllUsers() {
   const users = await User.find().populate("buyer").populate("seller").exec()
 
   return users
 }
 
 // get single user
-async function getSingleUserProfile(userId: string) {
+async function getSingleUser(userId: string) {
   const user = await User.findById(userId)
     .populate("buyer")
     .populate("seller")
@@ -22,38 +22,51 @@ async function getSingleUserProfile(userId: string) {
 
 // update single user
 async function updateUser(userId: string, updates: Partial<IUserProfile>) {
-  const user = await User.findByIdAndUpdate(userId, updates, {
+  // console.log(userId)
+  const user = await User.findById(userId)
+
+  const userProfileId = user?.buyer || user?.seller
+  // console.log(userProfileId)
+
+  await UserProfile.findOne({ _id: userProfileId }, updates, {
     new: true,
   })
-  return user
+
+  const userProfileUpdateResult = await User.findById(userId)
+    .populate("seller")
+    .populate("buyer")
+    .exec()
+  return userProfileUpdateResult
 }
 
 async function deleteUser(userId: string) {
   // Delete user profile
-  const userProfile = await UserProfile.findByIdAndRemove(userId)
+  const user = await User.findByIdAndRemove(userId)
     .populate("buyer")
     .populate("seller")
     .exec()
-
-  if (!userProfile) {
-    throw new ApiError(404, "User not found")
-  }
-
-  // Delete corresponding user from users collection
-  const user = await User.findOneAndRemove({
-    $or: [{ seller: userId }, { buyer: userId }],
-  })
 
   if (!user) {
     throw new ApiError(404, "User not found")
   }
 
-  return userProfile
+  // Delete corresponding user from users collection
+  const userProfile = await UserProfile.findOneAndRemove({
+    $or: [{ _id: user.seller }, { _id: user.buyer }],
+  })
+
+  // console.log(user)
+
+  if (!userProfile) {
+    throw new ApiError(404, "User not found")
+  }
+
+  return user
 }
 
 export const userProfileServices = {
-  getUserProfiles,
-  getSingleUserProfile,
+  getAllUsers,
+  getSingleUser,
   updateUser,
   deleteUser,
 }

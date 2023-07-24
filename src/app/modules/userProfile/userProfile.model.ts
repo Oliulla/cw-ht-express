@@ -1,16 +1,6 @@
 import { Schema, model } from "mongoose"
 import { IUserProfile } from "./userProfile.interface"
 
-// type IUserProfile = {
-//   name: {
-//     firstName: string
-//     lastName: string
-//   }
-//   address: string
-//   budget: number
-//   income: number
-// }
-
 const userProfileSchema = new Schema<IUserProfile>({
   name: {
     firstName: {
