@@ -27,7 +27,7 @@ const createAdmin = async (
   if (existingUser) {
     throw new ApiError(
       400,
-      "User with the provided phone number already exists"
+      "User with the provided phone number is already exists"
     )
   }
 

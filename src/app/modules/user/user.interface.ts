@@ -1,6 +1,6 @@
-import { Model, Types } from "mongoose"
-import { IUserProfile } from "../userProfile/userProfile.interface"
-import { IAdmin } from "../admin/admin.interface"
+// user.interface.ts
+
+import { Document } from "mongoose"
 
 export enum UserRole {
   SELLER = "seller",
@@ -9,15 +9,15 @@ export enum UserRole {
 }
 
 export type IUser = {
-  role: UserRole
+  // Extend Document here
   password: string
-  // needsPasswordChange: boolean
-  // passwordChangedAt?: Date
-  seller?: Types.ObjectId | IUserProfile
-  buyer?: Types.ObjectId | IUserProfile
-  admin?: Types.ObjectId | IAdmin
-  createdAt?: string
-  updatedAt?: string
-}
-
-export type UserModel = Model<IUser, Record<string, unknown>>
+  role: UserRole
+  name: {
+    firstName: string
+    lastName: string
+  }
+  phoneNumber: string
+  address: string
+  budget: number
+  income: number
+} & Document

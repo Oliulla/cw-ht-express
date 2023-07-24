@@ -1,7 +1,7 @@
 import { Label } from "../cow/cow.interface"
 import { Cow } from "../cow/cow.model"
 import { User } from "../user/user.model"
-import { UserProfile } from "../userProfile/userProfile.model"
+import { UserProfile } from "../myProfile/myProfile.model"
 import { IOrder } from "./order.interface"
 import { Order } from "./order.model"
 

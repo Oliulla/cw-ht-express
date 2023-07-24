@@ -1,4 +1,6 @@
-export type IUserProfile = {
+export type IMyProfile = {
+  role: string
+  password: string
   name: {
     firstName: string
     lastName: string

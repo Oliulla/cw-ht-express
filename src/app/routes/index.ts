@@ -1,6 +1,6 @@
 import express from "express"
 import { userRoutes } from "../modules/user/user.route"
-import { userProfileRoutes } from "../modules/userProfile/userProfile.route"
+import { userProfileRoutes } from "../modules/myProfile/myProfile.route"
 import { cowRoutes } from "../modules/cow/cow.route"
 import { orderRoutes } from "../modules/order/order.route"
 import { adminRoutes } from "../modules/admin/admin.route"

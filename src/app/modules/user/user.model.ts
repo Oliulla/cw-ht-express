@@ -1,37 +1,26 @@
-import { Schema, model } from "mongoose"
-import { IUser, UserModel, UserRole } from "./user.interface"
+// user.model.ts
 
-const userSchema = new Schema<IUser>(
+import mongoose, { Document, Model } from "mongoose"
+import { IUser, UserRole } from "./user.interface"
+import bcrypt from "bcrypt"
+import config from "../../../config"
+
+const userSchema = new mongoose.Schema<IUser>(
   {
+    password: { type: String, required: true },
     role: {
       type: String,
       enum: [UserRole.SELLER, UserRole.BUYER, UserRole.ADMIN],
       required: true,
     },
-    password: {
-      type: String,
-      required: true,
-      select: 0,
+    name: {
+      firstName: { type: String, required: true },
+      lastName: { type: String, required: true },
     },
-    // needsPasswordChange: {
-    //   type: Boolean,
-    //   default: true,
-    // },
-    // passwordChangedAt: {
-    //   type: Date,
-    // },
-    seller: {
-      type: Schema.Types.ObjectId,
-      ref: "UserProfile",
-    },
-    buyer: {
-      type: Schema.Types.ObjectId,
-      ref: "UserProfile",
-    },
-    admin: {
-      type: Schema.Types.ObjectId,
-      ref: "Admin",
-    },
+    phoneNumber: { type: String, required: true, unique: true },
+    address: { type: String, required: true },
+    budget: { type: Number, required: true },
+    income: { type: Number, default: 0 },
   },
   {
     timestamps: true,
@@ -41,4 +30,25 @@ const userSchema = new Schema<IUser>(
   }
 )
 
-export const User = model<IUser, UserModel>("User", userSchema)
+// Hash the password before saving
+userSchema.pre<IUser & Document>("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next()
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(Number(config.bycrypt_salt_rounds))
+    this.password = await bcrypt.hash(this.password, salt)
+    return next()
+  } catch (error) {
+    return next(error as Error) // Cast 'error' to 'Error'
+  }
+})
+
+// We use IUser to define both Document and Model for type safety
+const UserModel: Model<IUser & Document> = mongoose.model<IUser>(
+  "User",
+  userSchema
+)
+
+export default UserModel

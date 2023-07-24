@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { userProfileServices } from "./userProfile.service"
+import { userProfileServices } from "./myProfile.service"
 import catchAsync from "../../../shared/catchAsync"
 import sendResponse from "../../../shared/sendResponse"
 
@@ -38,6 +38,7 @@ const getSingleUserProfile = catchAsync(async (req: Request, res: Response) => {
 const updateUserProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.params.id
   const updates = req.body
+  // console.log(updates)
   const result = await userProfileServices.updateUser(userId, updates)
 
   if (!result) {
