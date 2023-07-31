@@ -40,9 +40,38 @@ async function deleteUser(userId: string) {
   return user
 }
 
+// Get the profile information of the currently authenticated user
+async function getMyProfile(userId: string) {
+  const user = await UserModel.findById(userId).select(
+    "name phoneNumber address"
+  )
+
+  if (!user) {
+    throw new ApiError(404, "User not found")
+  }
+
+  return user
+}
+
+// Update the profile information of the currently authenticated user
+async function updateMyProfile(userId: string, updates: Partial<IMyProfile>) {
+  const user = await UserModel.findByIdAndUpdate(userId, updates, {
+    new: true,
+    select: "name phoneNumber address",
+  })
+
+  if (!user) {
+    throw new ApiError(404, "User not found")
+  }
+
+  return user
+}
+
 export const userProfileServices = {
   getAllUsers,
   getSingleUser,
   updateUser,
   deleteUser,
+  getMyProfile,
+  updateMyProfile,
 }
