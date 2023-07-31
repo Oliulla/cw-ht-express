@@ -1,58 +1,92 @@
-// order.controller.ts
 import { Request, Response } from "express"
-import { orderServices } from "./order.service"
+import { orderService } from "./order.service"
+import catchAsync from "../../../shared/catchAsync"
+import sendResponse from "../../../shared/sendResponse"
+import httpStatus from "http-status"
+import { ENUM_USER_ROLE } from "../../../enums/user"
+import { JwtPayload } from "jsonwebtoken"
 
-// Create a new order
-const createOrderController = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+const createOrderController = catchAsync(
+  async (req: Request, res: Response) => {
     const { cow, buyer } = req.body
-    // console.log(cow, buyer)
 
     // Call the createOrder service function
-    const order = await orderServices.createOrder(cow, buyer)
-    // console.log(order)
+    const order = await orderService.createOrder(cow, buyer)
 
-    res.status(201).json({
+    sendResponse(res, {
       success: true,
+      statusCode: httpStatus.OK,
       message: "Order created successfully",
       data: order,
     })
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to create order",
-      error: error,
-    })
   }
-}
+)
 
-// Get all orders
-const getAllOrdersController = async (
-  _req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    // Call the getAllOrders service function
-    const orders = await orderServices.getAllOrders()
+const getAllOrdersController = catchAsync(
+  async (req: Request, res: Response) => {
+    // Get user role and ID from the request
+    const { role, user_id } = req.user as JwtPayload
 
-    res.status(200).json({
+    let orders
+    if (role === ENUM_USER_ROLE.ADMIN) {
+      // If the user is an admin, get all orders
+      orders = await orderService.getAllOrders()
+    } else if (role === ENUM_USER_ROLE.BUYER) {
+      // If the user is a buyer, get orders associated with the specific buyer
+      orders = await orderService.getOrdersByBuyer(user_id)
+    } else if (role === ENUM_USER_ROLE.SELLER) {
+      // If the user is a seller, get orders associated with the specific seller
+      orders = await orderService.getOrdersBySeller(user_id)
+    }
+
+    sendResponse(res, {
       success: true,
+      statusCode: httpStatus.OK,
       message: "Orders retrieved successfully",
       data: orders,
     })
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to retrieve orders",
-      error: error,
+  }
+)
+
+const getSingleOrderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const orderId = req.params.id
+
+    // Get user role and ID from the request
+    const { role, user_id } = req.user as JwtPayload
+
+    let order
+    if (role === ENUM_USER_ROLE.ADMIN) {
+      // If the user is an admin, get the order
+      order = await orderService.getOrderById(orderId)
+    } else if (role === ENUM_USER_ROLE.BUYER) {
+      // If the user is a buyer, get the order by order ID and buyer ID
+      order = await orderService.getOrderByBuyer(user_id, orderId)
+    } else if (role === ENUM_USER_ROLE.SELLER) {
+      // If the user is a seller, get the order by order ID and seller ID
+      order = await orderService.getOrderBySeller(user_id, orderId)
+    }
+
+    if (!order) {
+      return sendResponse(res, {
+        success: false,
+        statusCode: httpStatus.NOT_FOUND,
+        message: "Order not found",
+        data: null,
+      })
+    }
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Order information retrieved successfully",
+      data: order,
     })
   }
-}
+)
 
 export const orderController = {
   createOrderController,
   getAllOrdersController,
+  getSingleOrderController,
 }
