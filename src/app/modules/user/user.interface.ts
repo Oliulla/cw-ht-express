@@ -21,3 +21,8 @@ export type IUser = {
   budget: number
   income: number
 } & Document
+
+export type IUserLoginResponse = {
+  accessToken: string
+  refreshToken?: string
+}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Document, Model } from "mongoose"
 import { UserRole } from "../user/user.interface"
 
