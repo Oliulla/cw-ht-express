@@ -39,16 +39,27 @@ const createOrder = async (cowId: string, buyerId: string): Promise<IOrder> => {
     }
 
     user.budget -= cow.price
-    sellerUser.income += cow.price
     cow.label = Label.SoldOut
+
+    await user.save()
+    await cow.save()
+
+    // Fetch sellerUser again after cow.save()
+    const updatedSellerUser = await UserModel.findById(cow.seller)
+
+    if (updatedSellerUser) {
+      updatedSellerUser.income += cow.price
+      await updatedSellerUser.save()
+    } else {
+      // If sellerUser is not found, throw an error or handle it as needed
+      throw new Error("Seller user not found after updating cow")
+    }
 
     const order = new Order({
       cow: cowId,
       buyer: buyerId,
     })
 
-    await user.save()
-    await cow.save()
     await order.save()
 
     await session.commitTransaction()
